@@ -1,4 +1,3 @@
-from _winapi import GetModuleFileName
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
@@ -13,7 +12,7 @@ class ImageBase(BaseModel):
 class ImageCreate(ImageBase):
     pass
 
-class ImageReponse(ImageBase):
+class ImageResponse(ImageBase):
     id: int
     user_id: str
     created_at: datetime
