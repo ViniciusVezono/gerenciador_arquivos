@@ -34,6 +34,20 @@ except ClientError as e:
 def get_current_user():
     return "user_vinicius"
 
+
+def generate_presigned_url(file_key: str) -> str:
+    try:
+        url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.S3_BUCKET_NAME, "Key": file_key},
+            ExpiresIn=3600
+        )
+        
+        return url.replace("http://ministack:4566", "http://localhost:4566")
+    
+    except ClientError:
+        return ""
+
 @app.post("/images/", response_model=ImageResponse, status_code=status.HTTP_201_CREATED)
 async def upload_image(
     file: UploadFile = File(...),
@@ -70,7 +84,12 @@ def get_images(
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user)
 ):
-    return crud_image.get_multi(db=db, user_id=user_id, skip=skip, limit=limit)
+    db_images = crud_image.get_multi(db=db, user_id=user_id, skip=skip, limit=limit)
+
+    for img in db_images:
+        img.url = generate_presigned_url(img.file_key)
+    
+    return db_images
 
 @app.get("/images/{image_id}", response_model=ImageResponse)
 def get_image(
@@ -79,11 +98,13 @@ def get_image(
     user_id: str = Depends(get_current_user)
 ) : 
     db_image = crud_image.get(db=db, id=image_id, user_id=user_id)
-    if not db_image :
+    if not db_image:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Imagem não encontrada"
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Arquivo não encontrado ou sem permissão de acesso."
         )
+    
+    db_image.url = generate_presigned_url(db_image.file_key)
     return db_image
 
 @app.delete("/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -98,8 +119,21 @@ def delete_image(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Imagem não encontrada"
         )
+
+    try:
+        s3_client.delete_object(
+            Bucket=settings.S3_BUCKET_NAME,
+            Key=db_image.file_key
+        )
+    except ClientError:
+        raise HTTPException(status_code=500, detail="Erro interno ao deletar do S3.")
+
+
     crud_image.delete(db=db, id=image_id, user_id=user_id)
     return None
+
+
+@app.get
 
 @app.get("/")
 def root():

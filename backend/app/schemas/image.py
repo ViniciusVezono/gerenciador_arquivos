@@ -15,6 +15,7 @@ class ImageCreate(ImageBase):
 class ImageResponse(ImageBase):
     id: int
     user_id: str
+    url: str | None = None
     created_at: datetime
     updated_at: datetime
 
