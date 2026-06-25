@@ -12,6 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  ministack:
+    image: ministackorg/ministack:latest
+    container_name: ministack_aws
+    ports:
+      - "4566:4566"
+
   api:
     build: 
       context: ./backend

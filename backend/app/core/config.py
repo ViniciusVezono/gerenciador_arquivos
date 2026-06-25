@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_SERVER: str = "db"
     POSTGRES_PORT: str = "5432"
+
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str 
+    AWS_ENDPOINT_URL: str
+    S3_BUCKET_NAME: str
     
     @property
     def DATABASE_URL(self) -> str:
