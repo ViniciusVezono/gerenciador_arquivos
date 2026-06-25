@@ -26,4 +26,4 @@ class CRUDImage:
             db.commit()
         return db_obj
 
-    image = CRUDImage()
+image = CRUDImage()
