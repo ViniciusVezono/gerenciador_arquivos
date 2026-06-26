@@ -1,77 +1,30 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useAuth } from '@clerk/react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
-import { api } from '../services/api'
+import { useImagesQuery, useUploadMutation, useDeleteMutation } from '../services/image.queries'
 
-export const Route = createFileRoute()({
+export const Route = createFileRoute('/')({
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isSignedIn) {
+      throw redirect({ to: '/login' })
+    }
+  },
   component: Dashboard,
 })
 
-interface ImageItem {
-  id: number
-  filename: string
-  file_key: string
-  mime_type: string
-  size: number
-  url: string
-  created_at: string
-}
-
 function Dashboard() {
-  const { getToken } = useAuth()
-  const queryClient = useQueryClient() 
   const [file, setFile] = useState<File | null>(null)
 
-  const { data: images = [], isLoading: isLoadingImages } = useQuery<ImageItem[]>({
-    queryKey: ['images'], 
-    queryFn: async () => {
-      const token = await getToken()
-      const response = await api.get('/images/', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      return response.data
-    },
-  })
-
-  const uploadMutation = useMutation({
-    mutationFn: async (selectedFile: File) => {
-      const token = await getToken()
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-
-      const response = await api.post('/images/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      return response.data
-    },
-    onSuccess: () => {
-      setFile(null)
-      queryClient.invalidateQueries({ queryKey: ['images'] })
-    },
-    onError: () => alert('Falha ao enviar a imagem.'),
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const token = await getToken()
-      await api.delete(`/images/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['images'] })
-    },
-    onError: () => alert('Erro ao tentar deletar o arquivo.'),
-  })
+  const { data: images = [], isLoading: isLoadingImages } = useImagesQuery()
+  const uploadMutation = useUploadMutation()
+  const deleteMutation = useDeleteMutation()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log(file)
     if (!file) return
-    uploadMutation.mutate(file)
+    uploadMutation.mutate(file, {
+      onSuccess: () => setFile(null),
+    })
   }
 
   const formatSize = (bytes: number) => {
@@ -111,7 +64,7 @@ function Dashboard() {
 
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-950">Seus Arquivos Salvos</h2>
-        
+
         {isLoadingImages ? (
           <div className="text-slate-500">Buscando seus arquivos na nuvem...</div>
         ) : images.length === 0 ? (
@@ -122,7 +75,7 @@ function Dashboard() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {images.map((img) => (
               <div key={img.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
-                
+
                 <div className="aspect-video w-full overflow-hidden bg-slate-100">
                   <img src={img.url} alt={img.filename} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
                 </div>
@@ -138,8 +91,8 @@ function Dashboard() {
                       Visualizar
                     </a>
 
-                    <button type="button" disabled={deleteMutation.isPending} onClick={() => { if(confirm('Excluir arquivo permanentemente da nuvem?')) deleteMutation.mutate(img.id) }} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition" title="Deletar Arquivo">
-                      🗑️
+                    <button type="button" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Excluir arquivo permanentemente da nuvem?')) deleteMutation.mutate(img.id) }} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition" title="Deletar Arquivo">
+                      Excluir
                     </button>
                   </div>
                 </div>
