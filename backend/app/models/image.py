@@ -1,7 +1,7 @@
 from logging import NullHandler
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
-from app.db.database import Base
+from app.infrastructure.persistence.database import Base
 
 
 class Image(Base): 
