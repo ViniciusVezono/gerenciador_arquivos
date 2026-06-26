@@ -19,5 +19,5 @@ class Image:
 
     @property
     def is_valid_mime_type(self) -> bool:
-        allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+        allowed = ["image/jpeg", "image/png", "image/gif", "image/webp", "text/plain"]
         return self.mime_type in allowed

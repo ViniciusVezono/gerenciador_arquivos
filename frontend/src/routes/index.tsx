@@ -67,7 +67,7 @@ function Dashboard() {
             <label htmlFor="dropzone-file" className="flex h-44 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 transition">
               <div className="flex flex-col items-center justify-center pb-6 pt-5">
                 <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">Clique para selecionar imagem</span> ou arraste e solte</p>
-                <p className="text-xs text-slate-400">Formatos aceitos: PNG, JPG, JPEG, GIF</p>
+                <p className="text-xs text-slate-400">Formatos aceitos: PNG, JPG, JPEG, GIF, TXT</p>
               </div>
               <input id="dropzone-file" type="file" className="hidden" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
             </label>
