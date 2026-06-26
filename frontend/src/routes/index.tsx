@@ -84,6 +84,7 @@ function Dashboard() {
                   <div className="flex-1">
                     <p className="truncate text-sm font-semibold text-slate-900" title={img.filename}>{img.filename}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{formatSize(img.size)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{new Date(img.created_at).toLocaleDateString()}</p>
                   </div>
 
                   <div className="mt-4 flex gap-2">
