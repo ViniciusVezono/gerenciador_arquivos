@@ -2,6 +2,7 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -14,6 +15,21 @@ app = FastAPI(
     title="Gerenciador de Arquivos API",
     description="API para upload e gerenciamento de imagens",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 s3_client = boto3.client(
@@ -133,12 +149,6 @@ def delete_image(
     return None
 
 
-@app.get
-
 @app.get("/")
 def root():
     return {"status": "ok", "message": "API rodando no Docker!"}
-
-@app.get("/images/{image_id}")
-def get_image(image_id: int):
-    return {"message": f"Buscando imagem {image_id}"}
