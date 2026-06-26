@@ -8,7 +8,7 @@ from alembic import context
 import os
 import sys
 from app.core.config import settings
-from app.db.database import Base
+from app.infrastructure.persistence.database import Base
 from app.models.image import Image 
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))

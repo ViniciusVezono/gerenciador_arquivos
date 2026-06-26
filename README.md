@@ -114,40 +114,50 @@ frontend/
 
 ---
 
-## 🚀 Instruções para rodar localmente
+##  Instruções para rodar localmente
 
 ### Pré-requisitos
-- Node.js (v18+)
-- Python (3.11+)
 - Docker & Docker Compose
+- Node.js (v18+) — apenas se quiser rodar o frontend fora do Docker
 
-### 1. Inicializando a Infraestrutura (Docker)
-O projeto depende de um banco PostgreSQL e um ambiente simulando o S3 (LocalStack ou Ministack).
-Na raiz do repositório, suba os serviços:
+### Opção 1: Usando o script automatizado (Recomendado)
+O projeto inclui um script que cria os `.env` a partir dos exemplos e sobe tudo automaticamente:
 ```bash
-docker compose up -d
+chmod +x run-dev.sh
+./run-dev.sh
 ```
-*Isto irá subir o banco de dados `db`, o ambiente `ministack` e a API via container.*
 
-### 2. Inicializando o Frontend
-1. Navegue até o diretório do frontend:
+### Opção 2: Subindo manualmente com Docker Compose
+
+1. Crie os arquivos de ambiente copiando os exemplos:
 ```bash
-cd frontend
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
 ```
-2. Instale as dependências:
+
+2. Configure as variáveis de ambiente:
+   - No `backend/.env`, preencha a `CLERK_JWKS_URL` com a URL do seu JWKS do Clerk.
+   - No `frontend/.env.local`, preencha a chave pública do Clerk (`VITE_CLERK_PUBLISHABLE_KEY`).
+
+3. Suba todos os containers:
 ```bash
-npm install
+docker compose up -d --build
 ```
-3. Configure suas variáveis de ambiente (`.env`) contendo suas chaves públicas do Clerk.
-4. Inicie o servidor de desenvolvimento:
-```bash
-npm run dev
-```
-Acesse `http://localhost:5173` no seu navegador!
+
+Isso irá inicializar **4 serviços** automaticamente:
+
+| Serviço | Container | Porta | Descrição |
+|---|---|---|---|
+| `db` | `postgres_db` | `5432` | Banco de dados PostgreSQL |
+| `ministack` | `ministack_aws` | `4566` | Simulador local do AWS S3 |
+| `api` | `fastapi_backend` | `8000` | Backend FastAPI (roda migrations automaticamente ao iniciar) |
+| `frontend` | `frontend_app` | `3000` | Frontend React (Vite) |
+
+4. Acesse `http://localhost:3000` no seu navegador!
 
 ---
 
-## ✅ Funcionalidades Implementadas / Não Implementadas
+##  Funcionalidades Implementadas / Não Implementadas
 
 ### Funcionalidades Implementadas (Obrigatórias e Bônus)
 - **Autenticação**: Cadastro e login (email e senha) gerenciados pelo Clerk. Sessão é persistente durante o uso. Ações do backend (upload, listagem, deleção) são estritamente restritas ao usuário autenticado validando o JWT (JWKS).
@@ -162,7 +172,7 @@ Acesse `http://localhost:5173` no seu navegador!
 
 ---
 
-## 🧠 Decisões Técnicas Tomadas
+##  Decisões Técnicas Tomadas
 
 1. **Clean Architecture no Backend**: Optei por não manter um monolito. A separação do FastAPI em `domain` (regras puras), `infrastructure` (AWS S3, banco de dados) e `api` (rotas) permitiu cobrir a lógica de negócios com testes unitários executados em milissegundos, utilizando Mocks nativos sem depender do banco ou S3.
 2. **LocalStack/Ministack para S3**: Em vez de salvar arquivos localmente no disco do servidor, utilizei o Ministack para simular a API do AWS S3 via Docker. Isso torna a arquitetura Cloud-Native desde o dia 1: para ir para produção, basta trocar as credenciais e endpoint no `.env` para apontar para a AWS real, sem alterar 1 linha de código da aplicação.
