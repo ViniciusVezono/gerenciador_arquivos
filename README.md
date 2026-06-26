@@ -190,6 +190,15 @@ Em relação ao frontend foi utilizado as documentações oficiais do Tanstack e
 
 Com as configurações e ambiente corretamentes, o projeto foi ganhando forma e separando as pastas e arquivos de acordo com cada funcionalidade, sempre seguindo as boas práticas de desenvolvimento, organização e uma arquitetura de melhor entendimento(types, routes e services). 
 
+Além da inicialização, a IA foi utilizada para **correção de bugs e resolução de problemas** que surgiram durante o desenvolvimento. Entre os principais casos:
+- **Incompatibilidade de versões entre bibliotecas**: O `httpx 0.28` quebrava o `TestClient` do FastAPI 0.109.0 — a IA identificou a incompatibilidade e sugeriu o pin `httpx<0.28`.
+- **Erros de importação no Docker após refatoração**: Ao migrar de monolito para Clean Architecture, o `alembic/env.py` ainda referenciava o caminho antigo `app.db.database`. A IA rastreou o traceback e corrigiu o import para o novo caminho `app.infrastructure.persistence.database`.
+- **`exec format error` no Docker**: O script `docker-entrypoint.sh` criado no Windows não tinha shebang (`#!/bin/bash`) e estava com quebras de linha CRLF incompatíveis com o Linux nos containers — a IA diagnosticou ambos os problemas e aplicou a correção.
+- **Variáveis de ambiente ausentes**: O entrypoint do Docker não encontrava o host do banco (`$POSTGRES_SERVER`) porque a variável existia apenas como default no Python (Pydantic), mas não estava exportada no `.env`. A IA identificou a causa raiz e adicionou a variável.
+- **Erros de compatibilidade com Python 3.14**: O SQLAlchemy 2.0.25 apresentava `AssertionError` por mudanças internas no sistema de tipos do Python 3.14. A IA sugeriu o upgrade para `SQLAlchemy>=2.0.30`.
+
+Em todos esses cenários, a IA atuou como uma ferramenta de apoio — diagnosticando erros a partir de logs e tracebacks, sugerindo correções pontuais e explicando o motivo de cada problema para que eu pudesse aprender com cada situação.
+
 ---
 ##  Useful Resources
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
