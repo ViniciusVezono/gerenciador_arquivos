@@ -1,66 +1,87 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
+import { api } from '../services/api'
 
-export const Route = createFileRoute('/')({ component: Home })
+export const Route = createFileRoute('/')({
+  component: Dashboard,
+})
 
-function Home() {
+function Dashboard() {
+  const [file, setFile] = useState<File | null>(null)
+
+  const uploadMutation = useMutation({
+    mutationFn: async (selectedFile: File) => {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      const response = await api.post('/images/', formData, {
+        headers: {
+          // Authorization: `Bearer ${token}`,
+        },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      alert('Upload realizado com sucesso no S3 (MiniStack)!')
+      setFile(null) 
+   },
+    onError: (error) => {
+      console.error('Erro no upload:', error)
+      alert('Falha ao enviar a imagem.')
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!file) return
+    uploadMutation.mutate(file)
+  }
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-      <section className="space-y-6 py-6 lg:py-10">
-        <div className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 shadow-sm">
-          Clerk autenticado e pronto para uso
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Seu Workspace</h1>
+        <p className="text-slate-500">Faça o upload dos seus arquivos de imagem para a nuvem.</p>
+      </div>
 
-        <div className="space-y-4">
-          <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
-            Organize arquivos com uma base de autenticação já integrada.
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-            Use os controles no topo para entrar ou criar uma conta. Depois, siga para a área
-            autenticada para continuar a construção do fluxo de upload e gerenciamento.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            ['Login pronto', 'Fluxo de sign-in disponível para teste imediato.'],
-            ['Cadastro visível', 'O botão de criação de conta aparece na navegação.'],
-            ['Perfil do usuário', 'UserButton exibido quando a sessão está ativa.'],
-          ].map(([title, body]) => (
-            <div key={title} className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-sm backdrop-blur">
-              <p className="text-base font-semibold text-slate-950">{title}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <aside className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-950 p-8 text-white shadow-2xl shadow-slate-950/20">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
-        <div className="absolute -right-20 top-10 h-48 w-48 rounded-full bg-sky-400/20 blur-3xl" />
-        <div className="absolute -left-16 bottom-0 h-56 w-56 rounded-full bg-indigo-400/20 blur-3xl" />
-
-        <div className="relative space-y-5">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-200/80">
-            Próximos passos
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Teste a autenticação com a sua primeira conta.
-          </h2>
-          <p className="text-sm leading-7 text-slate-300">
-            Entre ou crie uma conta pelo cabeçalho. Quando o avatar aparecer, a sessão já estará
-            funcionando e você pode seguir com a navegação autenticada.
-          </p>
-
-          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <p className="text-sm font-medium text-white">Tudo que já está pronto</p>
-            <ul className="space-y-2 text-sm leading-6 text-slate-300">
-              <li>• Clerk Provider configurado no ponto de entrada.</li>
-              <li>• Navegação pública com ações de entrada e cadastro.</li>
-              <li>• Área autenticada protegida por sessão ativa.</li>
-            </ul>
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          
+          <div className="flex w-full items-center justify-center">
+            <label htmlFor="dropzone-file" className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 transition">
+              <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                <svg className="mb-4 h-8 w-8 text-slate-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                </svg>
+                <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">Clique para fazer upload</span> ou arraste e solte</p>
+                <p className="text-xs text-slate-500">SVG, PNG, JPG ou GIF</p>
+              </div>
+              <input 
+                id="dropzone-file" 
+                type="file" 
+                className="hidden" 
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+            </label>
           </div>
-        </div>
-      </aside>
+
+          {file && (
+            <div className="text-sm font-medium text-sky-600">
+              Arquivo selecionado: {file.name}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!file || uploadMutation.isPending}
+            className="inline-flex justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            {uploadMutation.isPending ? 'Enviando para a nuvem...' : 'Fazer Upload'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
