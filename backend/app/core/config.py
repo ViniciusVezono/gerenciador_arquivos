@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = "db"
     POSTGRES_PORT: str = "5432"
 
+    CLERK_JWKS_URL: str
+
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str 
