@@ -55,19 +55,30 @@ jwks_client = jwt.PyJWKClient(settings.CLERK_JWKS_URL)
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
     token = credentials.credentials
+    
+    try:
+        unverified_header = jwt.get_unverified_header(token)
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+    except Exception as e:
+        print(f"Erro ao ler token sem validação: {e}")
+
     try:
         signing_key = jwks_client.get_signing_key_from_jwt(token)
         payload = jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
+            leeway=60,
         )
         return payload["sub"]
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
+        print(f"[AUTH ERROR] Token expirado: {e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="O token de autenticação expirou.")
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        print(f"[AUTH ERROR] Token inválido: {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token de autenticação inválido.")
     except Exception as e:
+        print(f"[AUTH ERROR] Exceção genérica: {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Erro de autenticação: {str(e)}")
 
 def generate_presigned_url(file_key: str) -> str:

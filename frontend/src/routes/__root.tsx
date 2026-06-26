@@ -2,11 +2,24 @@ import { Link, createRootRouteWithContext, Outlet } from '@tanstack/react-router
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react'
+import type { useAuth } from '@clerk/react'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
+  auth: ReturnType<typeof useAuth>
 }>()({
   component: RootLayout,
+  notFoundComponent: () => (
+    <div className="grid min-h-[60vh] place-items-center text-center">
+      <div>
+        <p className="text-6xl font-bold text-slate-300">404</p>
+        <p className="mt-2 text-lg font-medium text-slate-500">Página não encontrada</p>
+        <Link to="/" className="mt-6 inline-flex items-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800">
+          Voltar ao início
+        </Link>
+      </div>
+    </div>
+  ),
 })
 
 function RootLayout() {
