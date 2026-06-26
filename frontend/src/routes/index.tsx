@@ -35,6 +35,25 @@ function Dashboard() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      console.error('Erro ao baixar a imagem:', error)
+      window.open(url, '_blank')
+    }
+  }
+
+
   return (
     <div className="space-y-12">
       <div>
@@ -88,12 +107,16 @@ function Dashboard() {
                   </div>
 
                   <div className="mt-4 flex gap-2">
-                    <a href={img.url} target="_blank" rel="noreferrer" className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                      Visualizar
+                    <a href={img.url} target="_blank" rel="noreferrer" className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                      Ver
                     </a>
 
-                    <button type="button" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Excluir arquivo permanentemente da nuvem?')) deleteMutation.mutate(img.id) }} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition" title="Deletar Arquivo">
-                      Excluir
+                    <button type="button" onClick={() => handleDownload(img.url, img.filename)} className="inline-flex flex-1 items-center justify-center rounded-xl border border-sky-200 bg-sky-50 px-2 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition">
+                      Baixar
+                    </button>
+
+                    <button type="button" disabled={deleteMutation.isPending} onClick={() => { if (confirm('Excluir arquivo permanentemente da nuvem?')) deleteMutation.mutate(img.id) }} className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition" title="Deletar Arquivo">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     </button>
                   </div>
                 </div>
