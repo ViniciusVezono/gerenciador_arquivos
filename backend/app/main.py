@@ -1,8 +1,10 @@
 import uuid
 import boto3
+import jwt  
 from botocore.exceptions import ClientError
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -47,9 +49,26 @@ except ClientError as e:
     if e.response['Error']['Code'] not in ['BucketAlreadyExists', 'BucketAlreadyOwnedByYou']:
         print(f"erro ao criar bucket: {e}")
 
-def get_current_user():
-    return "user_vinicius"
+security = HTTPBearer()
 
+jwks_client = jwt.PyJWKClient(settings.CLERK_JWKS_URL)
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
+    token = credentials.credentials
+    try:
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+        payload = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+        )
+        return payload["sub"]
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="O token de autenticação expirou.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token de autenticação inválido.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Erro de autenticação: {str(e)}")
 
 def generate_presigned_url(file_key: str) -> str:
     try:
