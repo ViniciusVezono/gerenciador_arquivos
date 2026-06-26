@@ -1,5 +1,3 @@
-Dockerfile
-
 # Usa uma imagem oficial do Python, versão enxuta (slim)
 FROM python:3.11-slim
 

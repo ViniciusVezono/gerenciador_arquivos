@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 
 echo "Aguardando banco de dados ficar disponível..."
