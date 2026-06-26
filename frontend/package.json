@@ -16,21 +16,25 @@
     "check": "prettier --check ."
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.18",
+    "@clerk/clerk-react": "^5.61.8",
+    "@clerk/react": "^6.11.1",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-query": "^5.101.1",
+    "@tanstack/react-query-devtools": "^5.101.1",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/router-plugin": "^1.132.0",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "tailwindcss": "^4.1.18"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
     "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.3.1",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/eslint-config": "latest",
+    "@tanstack/eslint-plugin-query": "^5.101.1",
     "@tanstack/router-cli": "^1.132.0",
     "@tanstack/router-plugin": "latest",
     "@testing-library/dom": "^10.4.1",
@@ -39,9 +43,12 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.5.2",
     "eslint": "^9.20.0",
     "jsdom": "^28.1.0",
+    "postcss": "^8.5.15",
     "prettier": "^3.8.1",
+    "tailwindcss": "^4.3.1",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",
     "vitest": "^4.1.5"
